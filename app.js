@@ -111,13 +111,20 @@ let UIController = (function () {
         incomeLabel: '.budget__income--value',
         expensesLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
-        container: '.container'
+        container: '.container',
+        datelabel: '.budget__title--month'
     };
 
 let formatNumber = function(num, type) {
-
+        let sign = ' ';
         num = num.toLocaleString('en-IN', {style: 'currency', currency: 'INR', minimumFractionDigit: 2})
-        return num;
+        if (type === 'exp') {
+            sign = '-';
+        } 
+        else if (type === 'inc') {
+            sign = '+';
+        }
+        return sign + ' ' + num;
     };
 
     return {
@@ -142,7 +149,7 @@ let formatNumber = function(num, type) {
                 html = `<div class="item clearfix" id="inc-${obj.id}">
                                 <div class="item__description">${obj.description}</div>
                                 <div class="right clearfix">
-                                    <div class="item__value">${formatNumber(obj.value)}</div>
+                                    <div class="item__value">${formatNumber(obj.value, type)}</div>
                                     <div class="item__delete">
                                         <button class="item__delete--btn"><ion-icon name="close-circle-outline"></ion-icon></button>
                                     </div>
@@ -153,7 +160,7 @@ let formatNumber = function(num, type) {
                 html = `<div class="item clearfix" id="exp-${obj.id}">
                             <div class="item__description">${obj.description}</div>
                             <div class="right clearfix">
-                                <div class="item__value">${formatNumber(obj.value)}</div>
+                                <div class="item__value">${formatNumber(obj.value, type)}</div>
                                 <div class="item__delete">
                                     <button class="item__delete--btn"><ion-icon name="close-circle-outline"></ion-icon></button>
                                 </div>
@@ -183,14 +190,27 @@ let formatNumber = function(num, type) {
         },
 
         displayBudget: function (obj) {
-            document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget);
-            document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc);
-            document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp);
+
+            let type;
+            obj.budget > 0 ? type = 'inc' : type = 'exp';
+            document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+            document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, 'inc');
+            document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp, 'exp');
             if (obj.percentage > 0) {
                 document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
             } else {
                 document.querySelector(DOMstrings.percentageLabel).textContent = "--";
             }
+
+        },
+
+        displayDate: function()
+        {
+            let date, month, year;
+            date = new Date();
+            year = date.getFullYear();
+            month = date.toLocaleDateString('default', {month: 'long'});
+            document.querySelector(DOMstrings.datelabel).textContent = month + ', ' + year;
 
         }
 
@@ -260,6 +280,7 @@ let controller = (function (budgetCtrl, UICtrl) {
         init: function () {
             console.log("Application has started.");
             setupEventListeners();
+            UIController.displayDate();
             UIController.displayBudget({
                 budget: 0,
                 totalInc: 0,
