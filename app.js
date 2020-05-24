@@ -144,7 +144,7 @@ let formatNumber = function(num, type) {
                                 <div class="right clearfix">
                                     <div class="item__value">${formatNumber(obj.value)}</div>
                                     <div class="item__delete">
-                                        <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
+                                        <button class="item__delete--btn"><ion-icon name="close-circle-outline"></ion-icon></button>
                                     </div>
                                 </div>
                             </div>`
@@ -155,7 +155,7 @@ let formatNumber = function(num, type) {
                             <div class="right clearfix">
                                 <div class="item__value">${formatNumber(obj.value)}</div>
                                 <div class="item__delete">
-                                    <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
+                                    <button class="item__delete--btn"><ion-icon name="close-circle-outline"></ion-icon></button>
                                 </div>
                             </div>
                         </div>`
