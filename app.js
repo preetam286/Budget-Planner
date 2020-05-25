@@ -3,6 +3,19 @@ let budgetController = (function () {
         this.id = id;
         this.description = description;
         this.value = value;
+        this.percentage = -1;
+    }
+
+    Expense.prototype.calcPercentage = function (totalIncome) {
+        if (totalIncome > 0) {
+            this.percentage = Math.round((this.value / totalIncome) * 100);
+        } else {
+            this.percentage = -1;
+        }
+    }
+
+    Expense.prototype.getPercentage = function () {
+        return this.percentage;
     }
 
     let Income = function (id, description, value) {
@@ -82,6 +95,20 @@ let budgetController = (function () {
 
         },
 
+        calculatePercentage: function () {
+            data.allItems.exp.forEach(function (curr) {
+                curr.calcPercentage(data.totals.inc);
+            })
+        },
+
+        getPercentages: function () {
+            let allPercentage;
+            allPercentage = data.allItems.exp.map(function (curr) {
+                return curr.getPercentage();
+            });
+            return allPercentage;
+        },
+
         getBudget: function () {
             return {
                 budget: data.budget,
@@ -112,16 +139,20 @@ let UIController = (function () {
         expensesLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
         container: '.container',
-        datelabel: '.budget__title--month'
+        datelabel: '.budget__title--month',
+        expensesPercentageLabel: '.item__percentage'
     };
 
-let formatNumber = function(num, type) {
+    let formatNumber = function (num, type) {
         let sign = ' ';
-        num = num.toLocaleString('en-IN', {style: 'currency', currency: 'INR', minimumFractionDigit: 2})
+        num = num.toLocaleString('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigit: 2
+        })
         if (type === 'exp') {
             sign = '-';
-        } 
-        else if (type === 'inc') {
+        } else if (type === 'inc') {
             sign = '+';
         }
         return sign + ' ' + num;
@@ -161,6 +192,7 @@ let formatNumber = function(num, type) {
                             <div class="item__description">${obj.description}</div>
                             <div class="right clearfix">
                                 <div class="item__value">${formatNumber(obj.value, type)}</div>
+                                <div class="item__percentage">21%</div>
                                 <div class="item__delete">
                                     <button class="item__delete--btn"><ion-icon name="close-circle-outline"></ion-icon></button>
                                 </div>
@@ -170,7 +202,7 @@ let formatNumber = function(num, type) {
             document.querySelector(element).insertAdjacentHTML('beforeend', html);
         },
 
-        deleteListItem: function(selectorID) {
+        deleteListItem: function (selectorID) {
 
             let el;
             el = document.getElementById(selectorID);
@@ -204,12 +236,33 @@ let formatNumber = function(num, type) {
 
         },
 
-        displayDate: function()
-        {
+        displayPercentages: function (percentages) {
+            let fields, nodeListForEach;
+            fields = document.querySelectorAll(DOMstrings.expensesPercentageLabel);
+
+            nodeListForEach = function (list, callback) {
+                for (let i = 0; i < list.length; i++) {
+                    callback(list[i], i);
+                }
+            };
+
+            nodeListForEach(fields, function (curr, index) {
+                if (percentages[index] > 0) {
+                    curr.textContent = percentages[index] + '%';
+                } else {
+                    curr.textContent = '--';
+                }
+
+            });
+        },
+
+        displayDate: function () {
             let date, month, year;
             date = new Date();
             year = date.getFullYear();
-            month = date.toLocaleDateString('default', {month: 'long'});
+            month = date.toLocaleDateString('default', {
+                month: 'long'
+            });
             document.querySelector(DOMstrings.datelabel).textContent = month + ', ' + year;
 
         }
@@ -253,6 +306,8 @@ let controller = (function (budgetCtrl, UICtrl) {
             UIController.clearFeilds();
 
             updateBudget();
+
+            updatePercentage();
         } else {
             alert("Please enter a valid Value");
         }
@@ -274,6 +329,13 @@ let controller = (function (budgetCtrl, UICtrl) {
         UIController.deleteListItem(itemID);
 
         updateBudget();
+    }
+
+    let updatePercentage = function () {
+        budgetController.calculatePercentage();
+
+        let Perc = budgetController.getPercentages();
+        UIController.displayPercentages(Perc);
     }
 
     return {
